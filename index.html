@@ -1,0 +1,45 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>View.js</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body>
+
+        <!--
+            Basic usage example
+            Inline styles for demo purposes, you'll want to style your container
+            in a different way as part of your build process
+        -->
+        <style>
+            .video-wrapper {
+                width: 100%;
+                margin: auto;
+                max-width: 700px;
+            }
+        </style>
+
+        <div id="video-wrapper" class="video-wrapper">
+
+            <!--
+                To include the player you'll need to create a <view-js> element like the example below
+                Props:
+                  - `view-source`          | required | the source of your video
+                  - `view-type`            | required | the file type of your video
+                  - `view-preload`         | optional | should the video preload
+                  - `view-allowfullscreen` | optional | if we're allowed to show the full screen button
+            -->
+            <view-js
+                view-source="http://nettuts.s3.amazonaws.com/763_sammyJSIntro/trailer_test.mp4"
+                view-type="video/mp4"
+                view-preload="auto"
+                view-allowfullscreen="true"
+            ></view-js>
+        </div>
+
+        <script src="./dist/bundle.js"></script>
+    </body>
+</html>
