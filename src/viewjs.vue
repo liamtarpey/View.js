@@ -1,6 +1,6 @@
 <template>
-    <div id="video-player-wrapper">
-        <video id="video-player" ref="videoPlayer">
+    <div id="video-player-wrapper" v-on:keydown.space="videoButton" tabindex="0">
+        <video id="video-player" ref="videoPlayer" v-on:click="videoButton">
             <source :src="viewSource" :type="viewType" :preload="viewPreload" />
         </video>
         <div id="video-player-controls" ref="videoControls" class="controls fixed">
@@ -39,6 +39,12 @@
     let progressBar = null;
     let progressLoop = null;
 
+    /**
+     * Converts seconds to a human readable format
+     * Checks if hours exists and prepends if needed
+     * @param {Number} num | seconds to convert
+     * @return {String} | human readable string 00:00:00
+     */
     const secondsToHumanReadable = (num) => {
         let hours = Math.floor(num / 3600);
         let minutes = Math.floor((num % 3600) / 60);
@@ -49,6 +55,7 @@
         minutes = (minutes < 10) ? '0' + minutes : minutes;
         seconds = (seconds < 10) ? '0' + seconds : seconds;
 
+        // If hours > 0, return string with hours prepended
         if(hours > 0) {
             return hours + ':' + minutes + ':' + seconds;
         }
@@ -56,6 +63,7 @@
         return minutes + ':' + seconds;
     };
 
+    // Shows the time when hovering over the progress bar
     const showHoverTime = () => {
         progressBar.onmousemove = function(e) {
             const percentage = e.offsetX / progressBar.offsetWidth;
@@ -64,6 +72,7 @@
         };
     };
 
+    // Toggles fixed class on the entire controls area
     const toggleFixedClass = () => {
         videoControls.classList.toggle('fixed');
     };
@@ -72,6 +81,7 @@
         // something to show buffering
     };
 
+    // Event listener for ended video
     const onVideoEnded = () => {
         videoPlayer.addEventListener('ended', function() {
             vm.$data.videoBeingPlayed = false;
@@ -79,10 +89,12 @@
         });
     };
 
+    // Click event handler for play/pause button
     const videoButton = () => {
         (vm.$data.videoBeingPlayed) ? vm.pauseVideo() : vm.playVideo();
     };
 
+    // Handles video play event
     const playVideo = () => {
         videoPlayer.play();
         videoPlayer.addEventListener('timeupdate', vm.timeUpdate);
@@ -90,11 +102,13 @@
         vm.toggleFixedClass();
     };
 
+    // Handles video pause event
     const pauseVideo = () => {
         videoPlayer.pause();
         vm.$data.videoBeingPlayed = false;
     };
 
+    // On timeupdate event, calculate remaining time of video
     const timeUpdate = () => {
         const duration = videoPlayer.duration;
         const currentTime = videoPlayer.currentTime;
@@ -104,21 +118,32 @@
         vm.$data.timeRemaining = secondsToHumanReadable(num);
     };
 
+    // Click event handler for skipping to a certain position in the video
     const skipToPosition = (e) => {
         const percentage = e.offsetX / progressBar.offsetWidth;
         videoPlayer.currentTime = percentage * videoPlayer.duration;
     };
 
+    /**
+     * Click event handler for volume control
+     * @param {String} vol
+     * NB: 5:1, 4:0.8, 3:0.6 , 2:0.4 , 1:0.2
+     */
     const adjustVolume = (vol) => {
-        // 5:1, 4:0.8, 3:0.6 , 2:0.4 , 1:0.2
+
         vm.$data.volume = vol / 5;
         videoPlayer.volume = vm.$data.volume;
     };
 
+    // Make the player full screen
     const enterFullScreen = () => {
         videoPlayer.webkitRequestFullScreen();
     };
 
+    /**
+     * Validate each prop that gets passed to our component
+     * @return {Object}
+     */
     const getPropsValidation = () => {
         return {
             viewSource: {
@@ -168,6 +193,7 @@
         }
     };
 
+    // Our default component setup
     const ViewJsComponent = {
         name: 'ViewJs',
         props: getPropsValidation(),
@@ -197,7 +223,7 @@
     export default ViewJsComponent;
 </script>
 
-<style lang="sass" scoped>
+<style scoped>
     #video-player {
         display: block;
         width: 100%;
@@ -205,6 +231,9 @@
     #video-player-wrapper {
         position: relative;
         display: block;
+    }
+    #video-player-wrapper:focus {
+        outline: none;
     }
     .controls {
         position: absolute;
