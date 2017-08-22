@@ -236,12 +236,11 @@
 </script>
 
 <style scoped>
-    /* move top id out of component and take out all IDs for styling */
+    /* Take out all IDs for styling - only use classes and make them more unique */
     #video-player {
         display: block;
         width: 100%;
     }
-
     #video-player-wrapper {
         position: relative;
         display: block;

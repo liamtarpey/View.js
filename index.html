@@ -33,9 +33,9 @@
                   - `view-allowfullscreen` | optional | if we're allowed to show the full screen button
             -->
             <view-js
-                view-source="http://nettuts.s3.amazonaws.com/763_sammyJSIntro/trailer_test.mp4"
-                view-type="video/mp4"
-                view-preload="auto"
+                :view-source="viewjsSource"
+                :view-type="viewjsType"
+                :view-preload="viewjsPreload"
                 view-allowfullscreen="true"
             ></view-js>
         </div>
