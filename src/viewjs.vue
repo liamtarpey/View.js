@@ -1,7 +1,12 @@
 <template>
     <div id="video-player-wrapper" v-on:keydown.space="videoButton" tabindex="0">
+        <div class="video-buffering" v-if="buffering">
+            <!-- replace this with spinner -->
+            <h1>LOADING</h1>
+        </div>
         <video id="video-player" ref="videoPlayer" v-on:click="videoButton">
             <source :src="viewSource" :type="viewType" :preload="viewPreload" />
+            Your browser does not support HTML5 video.
         </video>
         <div id="video-player-controls" ref="videoControls" class="controls fixed">
             <button class="controls__button" v-on:click="videoButton" v-bind:class="{play:!videoBeingPlayed,pause:videoBeingPlayed}">
@@ -9,7 +14,7 @@
             <div class="controls__bar">
                 <div ref="progressBar" class="controls__progress" v-on:click="skipToPosition($event)">
                     <div class="controls__progress-time">{{ timeElapsed }}</div>
-                    <span class="controls__progress-back" v-bind:style="{ width: percentagePlayed }"></span>
+                    <span class="controls__progress-back" v-bind:class="{ started: percentagePlayed !== 0 }" v-bind:style="{ width: percentagePlayed }"></span>
                 </div>
                 <div class="controls__time">{{ timeRemaining }}</div>
                 <div class="controls__volume">
@@ -77,8 +82,15 @@
         videoControls.classList.toggle('fixed');
     };
 
-    const bufferedPercentage = () => {
-        // something to show buffering
+    const videoBuffering = () => {
+        videoPlayer.onloadstart = function() {
+            console.log('waiting...');
+            vm.$data.buffering = true;
+        };
+        videoPlayer.oncanplay = function() {
+            console.log('playing...');
+            vm.$data.buffering = false;
+        };
     };
 
     // Event listener for ended video
@@ -130,7 +142,6 @@
      * NB: 5:1, 4:0.8, 3:0.6 , 2:0.4 , 1:0.2
      */
     const adjustVolume = (vol) => {
-
         vm.$data.volume = vol / 5;
         videoPlayer.volume = vm.$data.volume;
     };
@@ -166,6 +177,7 @@
      * This is where we define all our default data
      */
     const publicData = {
+        buffering: false,
         videoBeingPlayed: false,
         percentagePlayed: 0,
         volume: 0.6,
@@ -181,7 +193,7 @@
         return {
             showHoverTime: showHoverTime,
             toggleFixedClass: toggleFixedClass,
-            bufferedPercentage: bufferedPercentage,
+            videoBuffering: videoBuffering,
             onVideoEnded: onVideoEnded,
             videoButton: videoButton,
             playVideo: playVideo,
@@ -210,7 +222,7 @@
             progressBar = vm.$refs.progressBar;
 
             // Buffer video
-            vm.bufferedPercentage();
+            vm.videoBuffering();
 
             // Add ended event listener
             vm.onVideoEnded();
@@ -224,16 +236,30 @@
 </script>
 
 <style scoped>
+    /* move top id out of component and take out all IDs for styling */
     #video-player {
         display: block;
         width: 100%;
     }
+
     #video-player-wrapper {
         position: relative;
         display: block;
     }
     #video-player-wrapper:focus {
         outline: none;
+    }
+    .video-buffering {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0,0,0,.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 99;
     }
     .controls {
         position: absolute;
@@ -306,10 +332,24 @@
        border-radius: 3px;
        background-color: black;
        position: relative;
-   }
-   .controls__progress:hover {
-       cursor: pointer;
-   }
+    }
+    .controls__progress:hover {
+        cursor: pointer;
+    }
+    .controls__progress:hover .controls__progress-time {
+        display: block;
+    }
+    .controls__progress-time {
+        display: none;
+        position: absolute;
+        top: -40px;
+        left: 50%;
+        background-color: rgba(0,0,0,.7);
+        color: #fff;
+        padding: 4px 12px;
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+    }
     .controls__progress-back {
         position: absolute;
         height: 6px;
@@ -319,7 +359,7 @@
         background-color: #33ccff;
         border-radius: 3px;
     }
-    .controls__progress-back:before {
+    .controls__progress-back.started:before {
         content: '';
         position: absolute;
         top: -5px;
