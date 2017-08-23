@@ -27,17 +27,10 @@
             <!--
                 To include the player you'll need to create a <view-js> element like the example below
                 Props:
-                  - `view-source`          | required | the source of your video
-                  - `view-type`            | required | the file type of your video
-                  - `view-preload`         | optional | should the video preload
-                  - `view-allowfullscreen` | optional | if we're allowed to show the full screen button
+                  - `sources` | required | Array of sources to be passed to the component
+                  - TODO: `view-allowfullscreen` | optional | if we're allowed to show the full screen button
             -->
-            <view-js
-                :view-source="viewjsSource"
-                :view-type="viewjsType"
-                :view-preload="viewjsPreload"
-                view-allowfullscreen="true"
-            ></view-js>
+            <view-js :sources="viewJsSources"></view-js>
         </div>
 
         <script src="./dist/bundle.js"></script>

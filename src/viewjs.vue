@@ -1,11 +1,10 @@
 <template>
     <div id="video-player-wrapper" v-on:keydown.space="videoButton" tabindex="0">
         <div class="video-buffering" v-if="buffering">
-            <!-- replace this with spinner -->
-            <h1>LOADING</h1>
+            <div class="video-loader"></div>
         </div>
         <video id="video-player" ref="videoPlayer" v-on:click="videoButton">
-            <source :src="viewSource" :type="viewType" :preload="viewPreload" />
+            <source v-for="source in sources" :src="source.url" :type="source.type" :preload="source.preload" />
             Your browser does not support HTML5 video.
         </video>
         <div id="video-player-controls" ref="videoControls" class="controls fixed">
@@ -157,17 +156,9 @@
      */
     const getPropsValidation = () => {
         return {
-            viewSource: {
-                type: String,
+            sources: {
+                type: Array,
                 required: true
-            },
-            viewType: {
-                type: String,
-                required: true
-            },
-            viewPreload: {
-                type: String,
-                required: false
             }
         };
     };
@@ -240,6 +231,7 @@
     #video-player {
         display: block;
         width: 100%;
+        font-family: arial, sans-serif;
     }
     #video-player-wrapper {
         position: relative;
@@ -254,11 +246,21 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background-color: rgba(0,0,0,.7);
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 99;
+    }
+    .video-loader,
+    .video-loader:after {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+    }
+    .video-loader {
+        border: 8px solid rgba(255,255,255,.4);
+        border-left: 8px solid #fff;
+        animation: viewJsSpinner 1.1s infinite linear;
     }
     .controls {
         position: absolute;
@@ -370,7 +372,6 @@
         border: 2px solid #25bbed;
     }
     .controls__time {
-        font-family: arial, sans-serif;
         color: white;
         font-size: 14px;
         margin-right: 12px;
@@ -443,5 +444,13 @@
         right: 0;
         border-bottom: 2px solid white;
         border-right: 2px solid white;
+    }
+    @keyframes viewJsSpinner {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
     }
 </style>
