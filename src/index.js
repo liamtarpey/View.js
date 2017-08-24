@@ -13,18 +13,19 @@ const videoWrapper = new Vue({
     el: '#video-wrapper',
     data: function() {
         return {
-            viewJsSources: [
-                {
-                    url: 'http://nettuts.s3.amazonaws.com/763_sammyJSIntro/trailer_test.mp4',
-                    type: 'video/mp4',
-                    preload: 'none'
-                },
-                {
-                    url: 'http://nettuts.s3.amazonaws.com/763_sammyJSIntro/trailer_test.ogg',
-                    type: 'video/ogg',
-                    preload: 'none'
-                }
-            ]
+            viewJs: {
+                preload: 'none',
+                sources: [
+                    {
+                        url: 'http://nettuts.s3.amazonaws.com/763_sammyJSIntro/trailer_test.mp4',
+                        type: 'video/mp4'
+                    },
+                    {
+                        url: 'http://nettuts.s3.amazonaws.com/763_sammyJSIntro/trailer_test.ogg',
+                        type: 'video/ogg'
+                    }
+                ]
+            }
         }
     },
     components: {

@@ -30,7 +30,7 @@
                   - `sources` | required | Array of sources to be passed to the component
                   - TODO: `view-allowfullscreen` | optional | if we're allowed to show the full screen button
             -->
-            <view-js :sources="viewJsSources"></view-js>
+            <view-js :sources="viewJs.sources" :preload="viewJs.preload"></view-js>
         </div>
 
         <script src="./dist/bundle.js"></script>

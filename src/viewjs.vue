@@ -1,10 +1,8 @@
 <template>
     <div id="video-player-wrapper" v-on:keydown.space="videoButton" tabindex="0">
-        <div class="video-buffering" v-if="buffering">
-            <div class="video-loader"></div>
-        </div>
-        <video id="video-player" ref="videoPlayer" v-on:click="videoButton">
-            <source v-for="source in sources" :src="source.url" :type="source.type" :preload="source.preload" />
+        <div class="video-loader" v-if="buffering"></div>
+        <video id="video-player" ref="videoPlayer" v-on:click="videoButton" :preload="preload">
+            <source v-for="source in sources" :src="source.url" :type="source.type" />
             Your browser does not support HTML5 video.
         </video>
         <div id="video-player-controls" ref="videoControls" class="controls fixed">
@@ -14,6 +12,9 @@
                 <div ref="progressBar" class="controls__progress" v-on:click="skipToPosition($event)">
                     <div class="controls__progress-time">{{ timeElapsed }}</div>
                     <span class="controls__progress-back" v-bind:class="{ started: percentagePlayed !== 0 }" v-bind:style="{ width: percentagePlayed }"></span>
+                    <div class="controls__progress-ranges">
+                        <span class="controls__progress-range" v-for="range in bufferRanges" v-bind:style="{ left:range.start, width:range.end }"></span>
+                    </div>
                 </div>
                 <div class="controls__time">{{ timeRemaining }}</div>
                 <div class="controls__volume">
@@ -81,15 +82,50 @@
         videoControls.classList.toggle('fixed');
     };
 
+    /**
+     * On progress event we get the player's buffered attribute.
+     * From here we can calculate an array of ranges to show
+     * at what point the video has been loaded.
+     */
+    const calculateBufferRanges = () => {
+        videoPlayer.addEventListener('progress', function() {
+
+            // Reset ranges every time
+            vm.$data.bufferRanges = [];
+
+            // Loop through all ranges to calculate start and end times
+            for(let i=0, l=videoPlayer.buffered.length; i<l; i++) {
+                const totalDuration = videoPlayer.duration;
+                const startTime = Math.floor((100 / totalDuration) * videoPlayer.buffered.start(i));
+                const endTime = Math.floor((100 / totalDuration) * videoPlayer.buffered.end(i));
+                vm.$data.bufferRanges.push({
+                    start: startTime + '%',
+                    end: endTime + '%'
+                });
+            }
+        });
+    };
+
     const videoBuffering = () => {
-        videoPlayer.onloadstart = function() {
-            console.log('waiting...');
-            vm.$data.buffering = true;
-        };
-        videoPlayer.oncanplay = function() {
-            console.log('playing...');
-            vm.$data.buffering = false;
-        };
+
+        // should we show spinner or not. logic goes here.
+
+        // videoPlayer.addEventListener('loadstart', function() {
+        //     console.log('loadstart');
+        //     vm.$data.buffering = true;
+        // });
+        // videoPlayer.addEventListener('seeked', function() {
+        //     console.log('seeked');
+        //     vm.$data.buffering = true;
+        // });
+        // videoPlayer.addEventListener('stalled', function() {
+        //     console.log('stalled');
+        //     vm.$data.buffering = true;
+        // });
+        // videoPlayer.addEventListener('canplay', function() {
+        //     console.log('can play!');
+        //     vm.$data.buffering = false;
+        // });
     };
 
     // Event listener for ended video
@@ -159,6 +195,10 @@
             sources: {
                 type: Array,
                 required: true
+            },
+            preload: {
+                type: String,
+                required: false
             }
         };
     };
@@ -169,6 +209,7 @@
      */
     const publicData = {
         buffering: false,
+        bufferRanges: [],
         videoBeingPlayed: false,
         percentagePlayed: 0,
         volume: 0.6,
@@ -182,10 +223,7 @@
      */
     const getPublicMethods = () => {
         return {
-            showHoverTime: showHoverTime,
             toggleFixedClass: toggleFixedClass,
-            videoBuffering: videoBuffering,
-            onVideoEnded: onVideoEnded,
             videoButton: videoButton,
             playVideo: playVideo,
             pauseVideo: pauseVideo,
@@ -212,14 +250,17 @@
             videoControls = vm.$refs.videoControls;
             progressBar = vm.$refs.progressBar;
 
-            // Buffer video
-            vm.videoBuffering();
+            // Show & hide spinner
+            videoBuffering();
 
             // Add ended event listener
-            vm.onVideoEnded();
+            onVideoEnded();
 
             // Add hover event for progress bar
-            vm.showHoverTime();
+            showHoverTime();
+
+            // Calculate the ranges to show loaded content
+            calculateBufferRanges();
         }
     };
 
@@ -240,26 +281,20 @@
     #video-player-wrapper:focus {
         outline: none;
     }
-    .video-buffering {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 99;
-    }
     .video-loader,
     .video-loader:after {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin: -10px 0 0 -10px;
+        z-index: 99;
         width: 20px;
         height: 20px;
         border-radius: 50%;
     }
     .video-loader {
-        border: 8px solid rgba(255,255,255,.4);
-        border-left: 8px solid #fff;
+        border: 8px solid rgba(187, 255, 153,.4);
+        border-left: 8px solid #bbff99;
         animation: viewJsSpinner 1.1s infinite linear;
     }
     .controls {
@@ -359,6 +394,7 @@
         width: 0;
         background-color: #33ccff;
         border-radius: 3px;
+        z-index: 2;
     }
     .controls__progress-back.started:before {
         content: '';
@@ -370,6 +406,24 @@
         border-radius: 100%;
         background-color: #33ccff;
         border: 2px solid #25bbed;
+    }
+    .controls__progress-ranges {
+        position: absolute;
+        height: 6px;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 0;
+        border-radius: 3px;
+        overflow: hidden;
+    }
+    .controls__progress-range {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 0;
+        background-color: grey;
     }
     .controls__time {
         color: white;
