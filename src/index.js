@@ -14,6 +14,7 @@ const videoWrapper = new Vue({
     data: function() {
         return {
             viewJs: {
+                allowFullScreen: true,
                 preload: 'none',
                 sources: [
                     {
