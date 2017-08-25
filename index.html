@@ -1,5 +1,5 @@
 <!doctype html>
-<html class="no-js" lang="">
+<html>
     <head>
         <meta charset="utf-8">
         <meta http-equiv="x-ua-compatible" content="ie=edge">
@@ -15,6 +15,16 @@
             in a different way as part of your build process
         -->
         <style>
+
+            /* Paul Irish box sizing: https://www.paulirish.com/2012/box-sizing-border-box-ftw/ */
+            html {
+                box-sizing: border-box;
+            }
+            *, *:before, *:after {
+                box-sizing: inherit;
+            }
+
+            /* Default wrapper style */
             .video-wrapper {
                 width: 100%;
                 margin: auto;
@@ -26,11 +36,9 @@
 
             <!--
                 To include the player you'll need to create a <view-js> element like the example below
-                Props:
-                  - `sources` | required | Array of sources to be passed to the component
-                  - TODO: `view-allowfullscreen` | optional | if we're allowed to show the full screen button
+                Props: is an object that you define in your exposed parent data
             -->
-            <view-js :sources="viewJsSources"></view-js>
+            <view-js :props="viewJs"></view-js>
         </div>
 
         <script src="./dist/bundle.js"></script>

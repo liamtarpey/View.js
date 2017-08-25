@@ -1,29 +1,37 @@
 <template>
-    <div id="video-player-wrapper" v-on:keydown.space="videoButton" tabindex="0">
-        <div class="video-buffering" v-if="buffering">
-            <div class="video-loader"></div>
+    <div class="VJS_video-player-wrapper" v-on:keydown.space="clickVideoButton" tabindex="0">
+        <div class="VJS_video-spinner" v-if="showSpinner">
+            <div class="VJS_video-spinner__inner"></div>
         </div>
-        <video id="video-player" ref="videoPlayer" v-on:click="videoButton">
-            <source v-for="source in sources" :src="source.url" :type="source.type" :preload="source.preload" />
+        <video class="VJS_video-player" ref="videoPlayer" v-on:click="clickVideoButton" :preload="props.preload">
+            <source v-for="source in props.sources" :src="source.url" :type="source.type" />
             Your browser does not support HTML5 video.
         </video>
-        <div id="video-player-controls" ref="videoControls" class="controls fixed">
-            <button class="controls__button" v-on:click="videoButton" v-bind:class="{play:!videoBeingPlayed,pause:videoBeingPlayed}">
+        <div class="VJS_controls VJS_controls--fixed" ref="videoControls">
+            <button class="VJS_controls__button"
+                    v-on:click="clickVideoButton"
+                    v-bind:class="{
+                        'VJS_controls__button--play': !videoBeingPlayed,
+                        'VJS_controls__button--pause': videoBeingPlayed
+                    }">
             </button>
-            <div class="controls__bar">
-                <div ref="progressBar" class="controls__progress" v-on:click="skipToPosition($event)">
-                    <div class="controls__progress-time">{{ timeElapsed }}</div>
-                    <span class="controls__progress-back" v-bind:class="{ started: percentagePlayed !== 0 }" v-bind:style="{ width: percentagePlayed }"></span>
+            <div class="VJS_controls__bar">
+                <div ref="progressBar" class="VJS_controls__progress" v-on:click="clickSkipToPosition($event)">
+                    <div class="VJS_controls__progress-time" v-if="timeElapsed">{{ timeElapsed }}</div>
+                    <span class="VJS_controls__progress-back" v-bind:class="{ 'VJS_started': percentagePlayed !== 0 }" v-bind:style="{ width: percentagePlayed }"></span>
+                    <div class="VJS_controls__progress-ranges">
+                        <span class="VJS_controls__progress-range" v-for="range in bufferRanges" v-bind:style="{ left: range.start, width: range.end }"></span>
+                    </div>
                 </div>
-                <div class="controls__time">{{ timeRemaining }}</div>
-                <div class="controls__volume">
-                    <div class="controls__volume-bar" v-bind:class="{ active: volume >= 0.2 }" v-on:click="adjustVolume(1)"></div>
-                    <div class="controls__volume-bar" v-bind:class="{ active: volume >= 0.4 }" v-on:click="adjustVolume(2)"></div>
-                    <div class="controls__volume-bar" v-bind:class="{ active: volume >= 0.6 }" v-on:click="adjustVolume(3)"></div>
-                    <div class="controls__volume-bar" v-bind:class="{ active: volume >= 0.8 }" v-on:click="adjustVolume(4)"></div>
-                    <div class="controls__volume-bar" v-bind:class="{ active: volume === 1 }" v-on:click="adjustVolume(5)"></div>
+                <div class="VJS_controls__time">{{ timeRemaining }}</div>
+                <div class="VJS_controls__volume">
+                    <div class="VJS_controls__volume-bar" v-bind:class="{ 'VJS_controls__volume-bar--active': volume >= 0.2 }" v-on:click="clickAdjustVolume(0.2)"></div>
+                    <div class="VJS_controls__volume-bar" v-bind:class="{ 'VJS_controls__volume-bar--active': volume >= 0.4 }" v-on:click="clickAdjustVolume(0.4)"></div>
+                    <div class="VJS_controls__volume-bar" v-bind:class="{ 'VJS_controls__volume-bar--active': volume >= 0.6 }" v-on:click="clickAdjustVolume(0.6)"></div>
+                    <div class="VJS_controls__volume-bar" v-bind:class="{ 'VJS_controls__volume-bar--active': volume >= 0.8 }" v-on:click="clickAdjustVolume(0.8)"></div>
+                    <div class="VJS_controls__volume-bar" v-bind:class="{ 'VJS_controls__volume-bar--active': volume === 1 }" v-on:click="clickAdjustVolume(1)"></div>
                 </div>
-                <div class="controls__full-screen" v-on:click="enterFullScreen">
+                <div class="VJS_controls__full-screen" v-on:click="clickEnterFullScreen" v-if="props.allowFullScreen">
                     <span></span>
                     <span></span>
                     <span></span>
@@ -36,12 +44,21 @@
 
 <script>
 
-    // Public vars
+    // Private vars
     let vm = null;
     let videoPlayer = null;
     let videoControls = null;
     let progressBar = null;
     let progressLoop = null;
+    const fileName = 'viewjs.vue';
+
+    /**
+     * Logs an error with the filename
+     * @param {String} error
+     */
+    const logError = (error) => {
+        console.error('View.JS:', fileName + ' -', error);
+    };
 
     /**
      * Converts seconds to a human readable format
@@ -71,46 +88,61 @@
     const showHoverTime = () => {
         progressBar.onmousemove = function(e) {
             const percentage = e.offsetX / progressBar.offsetWidth;
-            const num = Math.floor(percentage * videoPlayer.duration)
-            vm.$data.timeElapsed = secondsToHumanReadable(num);
+            const num = Math.floor(percentage * videoPlayer.duration);
+            if(!isNaN(num)) {
+                vm.$data.timeElapsed = secondsToHumanReadable(num);
+            }
         };
     };
 
-    // Toggles fixed class on the entire controls area
-    const toggleFixedClass = () => {
-        videoControls.classList.toggle('fixed');
+    // Toggles VJS_controls--fixed class on the entire controls area
+    const toggleFixedControls = () => {
+        videoControls.classList.toggle('VJS_controls--fixed');
     };
 
-    const videoBuffering = () => {
-        videoPlayer.onloadstart = function() {
-            console.log('waiting...');
-            vm.$data.buffering = true;
-        };
-        videoPlayer.oncanplay = function() {
-            console.log('playing...');
-            vm.$data.buffering = false;
-        };
+    /**
+     * On progress event we get the player's buffered attribute.
+     * From here we can calculate an array of ranges to show
+     * at what point the video has been loaded.
+     */
+    const calculateBufferRanges = () => {
+
+        // Reset ranges every time
+        vm.$data.bufferRanges = [];
+
+        // Loop through all ranges to calculate start and end times
+        for(let i=0, l=videoPlayer.buffered.length; i<l; i++) {
+            const totalDuration = videoPlayer.duration;
+            const startTime = Math.floor((100 / totalDuration) * videoPlayer.buffered.start(i));
+            const endTime = Math.floor((100 / totalDuration) * videoPlayer.buffered.end(i));
+            vm.$data.bufferRanges.push({
+                start: startTime + '%',
+                end: endTime + '%'
+            });
+        }
     };
 
     // Event listener for ended video
     const onVideoEnded = () => {
-        videoPlayer.addEventListener('ended', function() {
-            vm.$data.videoBeingPlayed = false;
-            vm.toggleFixedClass();
-        });
+        vm.$data.videoBeingPlayed = false;
+        toggleFixedControls();
     };
 
     // Click event handler for play/pause button
-    const videoButton = () => {
-        (vm.$data.videoBeingPlayed) ? vm.pauseVideo() : vm.playVideo();
+    const clickVideoButton = () => {
+
+        if(vm.$data.showSpinner) {
+            return false;
+        }
+
+        (vm.$data.videoBeingPlayed) ? pauseVideo() : playVideo();
     };
 
     // Handles video play event
     const playVideo = () => {
         videoPlayer.play();
-        videoPlayer.addEventListener('timeupdate', vm.timeUpdate);
         vm.$data.videoBeingPlayed = true;
-        vm.toggleFixedClass();
+        toggleFixedControls();
     };
 
     // Handles video pause event
@@ -130,7 +162,7 @@
     };
 
     // Click event handler for skipping to a certain position in the video
-    const skipToPosition = (e) => {
+    const clickSkipToPosition = (e) => {
         const percentage = e.offsetX / progressBar.offsetWidth;
         videoPlayer.currentTime = percentage * videoPlayer.duration;
     };
@@ -138,42 +170,103 @@
     /**
      * Click event handler for volume control
      * @param {String} vol
-     * NB: 5:1, 4:0.8, 3:0.6 , 2:0.4 , 1:0.2
      */
-    const adjustVolume = (vol) => {
-        vm.$data.volume = vol / 5;
+    const clickAdjustVolume = (vol) => {
+        vm.$data.volume = vol;
         videoPlayer.volume = vm.$data.volume;
     };
 
     // Make the player full screen
-    const enterFullScreen = () => {
+    const clickEnterFullScreen = () => {
         videoPlayer.webkitRequestFullScreen();
     };
 
+    // Shows buffering spinner
+    const showSpinner = () => {
+        vm.$data.showSpinner = true;
+    };
+
+    // Hides buffering spinner
+    const hideSpinner = () => {
+        vm.$data.showSpinner = false;
+    };
+
     /**
-     * Validate each prop that gets passed to our component
+     * Attaches all event listeners on init:
+     *
+     * - timeupdate | timeUpdate()            | ensures timer progresses during playback
+     * - waiting    | showSpinner()           | shows the spinner when video is buffering
+     * - canplay    | hideSpinner()           | hides the spinner when video stops buffering
+     * - ended      | onVideoEnded()          | fires pause event on video to toggle button
+     * - progress   | calculateBufferRanges() | loops through buffer ranges to show loaded chunks on progress bar
+     */
+    const attachEventListeners = () => {
+        videoPlayer.addEventListener('timeupdate', timeUpdate);
+        videoPlayer.addEventListener('waiting', showSpinner);
+        videoPlayer.addEventListener('canplay', hideSpinner);
+        videoPlayer.addEventListener('ended', onVideoEnded);
+        videoPlayer.addEventListener('progress', calculateBufferRanges);
+    };
+
+    /**
+     * Validate our main prop object that's passed through to our component.
      * @return {Object}
      */
     const getPropsValidation = () => {
         return {
-            sources: {
-                type: Array,
-                required: true
+            props: {
+                type: Object,
+                validator: function(prop) {
+
+                    const sourceValues = ['url', 'type'];
+                    const preloadValues = ['none', 'auto', 'metadata'];
+
+                    if(!prop.hasOwnProperty('allowFullScreen')) {
+                        logError('Missing `allowFullScreen` value in prop.');
+                        return false;
+                    }
+
+                    if(!prop.hasOwnProperty('preload')) {
+                        logError('Missing `preload` value in prop.');
+                        return false;
+                    } else if(preloadValues.indexOf(prop.preload) === -1) {
+                        logError('`preload` value does not exist - Accepted values are: `none`, `auto` or `metadata`.');
+                        return false;
+                    }
+
+                    if(!prop.hasOwnProperty('sources') || !prop.sources.length || !Array.isArray(prop.sources)) {
+                        logError('`sources` value missing or badly constructed.');
+                        return false;
+                    }
+
+                    for(let i=0, l=prop.sources.length; i<l; i++) {
+                        for(let j=0, k=sourceValues.length; j<k; j++) {
+                            if(!prop.sources[i].hasOwnProperty(sourceValues[j])) {
+                                logError('source index[' + i + '] is missing property `' + sourceValues[j] + '`');
+                                return false;
+                            }
+                        }
+                    }
+
+                    return true;
+                }
             }
         };
     };
 
     /**
-     * Define all exposed data
-     * This is where we define all our default data
+     * Construct object of public data
+     * We expose this whole object publicly
+     * All values are defaults
      */
     const publicData = {
-        buffering: false,
+        showSpinner: false,
+        bufferRanges: [],
         videoBeingPlayed: false,
         percentagePlayed: 0,
         volume: 0.6,
         timeRemaining: '00:00',
-        timeElapsed: '00:00'
+        timeElapsed: null
     };
 
     /**
@@ -182,17 +275,10 @@
      */
     const getPublicMethods = () => {
         return {
-            showHoverTime: showHoverTime,
-            toggleFixedClass: toggleFixedClass,
-            videoBuffering: videoBuffering,
-            onVideoEnded: onVideoEnded,
-            videoButton: videoButton,
-            playVideo: playVideo,
-            pauseVideo: pauseVideo,
-            timeUpdate: timeUpdate,
-            skipToPosition: skipToPosition,
-            adjustVolume: adjustVolume,
-            enterFullScreen: enterFullScreen
+            clickVideoButton: clickVideoButton,
+            clickSkipToPosition: clickSkipToPosition,
+            clickAdjustVolume: clickAdjustVolume,
+            clickEnterFullScreen: clickEnterFullScreen
         }
     };
 
@@ -212,14 +298,11 @@
             videoControls = vm.$refs.videoControls;
             progressBar = vm.$refs.progressBar;
 
-            // Buffer video
-            vm.videoBuffering();
-
-            // Add ended event listener
-            vm.onVideoEnded();
+            // Attach all event listeners on load
+            attachEventListeners();
 
             // Add hover event for progress bar
-            vm.showHoverTime();
+            showHoverTime();
         }
     };
 
@@ -227,42 +310,40 @@
 </script>
 
 <style scoped>
-    /* Take out all IDs for styling - only use classes and make them more unique */
-    #video-player {
+    .VJS_video-player-wrapper {
+        position: relative;
+        display: block;
+    }
+    .VJS_video-player-wrapper:focus {
+        outline: none;
+    }
+    .VJS_video-player {
         display: block;
         width: 100%;
         font-family: arial, sans-serif;
     }
-    #video-player-wrapper {
-        position: relative;
-        display: block;
-    }
-    #video-player-wrapper:focus {
-        outline: none;
-    }
-    .video-buffering {
+    .VJS_video-spinner {
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        top: 50%;
+        left: 50%;
+        margin: -30px 0 0 -30px;
+        border-radius: 5px;
+        background: rgba(0,0,0,0.6);
+        padding: 14px;
         z-index: 99;
     }
-    .video-loader,
-    .video-loader:after {
+    .VJS_video-spinner__inner,
+    .VJS_video-spinner__inner:after {
         width: 20px;
         height: 20px;
         border-radius: 50%;
     }
-    .video-loader {
-        border: 8px solid rgba(255,255,255,.4);
-        border-left: 8px solid #fff;
+    .VJS_video-spinner__inner {
+        border: 16px solid rgba(255, 255, 255,.4);
+        border-left: 16px solid #ffffff;
         animation: viewJsSpinner 1.1s infinite linear;
     }
-    .controls {
+    .VJS_controls {
         position: absolute;
         left: 12px;
         bottom: 12px;
@@ -272,7 +353,7 @@
         justify-content: space-between;
         align-items: center;
     }
-    .controls__button {
+    .VJS_controls__button {
         background-color: rgba(0,0,0,.7);
         border-radius: 8px;
         width: 80px;
@@ -283,18 +364,18 @@
         text-align: center;
         position: relative;
     }
-    .controls__button:hover {
+    .VJS_controls__button:hover {
         cursor: pointer;
     }
-    .controls__button:focus {
+    .VJS_controls__button:focus {
         outline: none;
     }
-    .controls__button:before,
-    .controls__button:after {
+    .VJS_controls__button:before,
+    .VJS_controls__button:after {
         content: '';
         position: absolute;
     }
-    .controls__button.play:before {
+    .VJS_controls__button--play:before {
         left: 50%;
         top: 50%;
         margin: -10px 0 0 -6px;
@@ -304,20 +385,20 @@
         border-bottom: 10px solid transparent;
         border-left: 18px solid white;
     }
-    .controls__button.pause:before,
-    .controls__button.pause:after {
+    .VJS_controls__button--pause:before,
+    .VJS_controls__button--pause:after {
         height: 22px;
         width: 6px;
         background-color: white;
         top: 9px;
     }
-    .controls__button.pause:before {
+    .VJS_controls__button--pause:before {
         left: 32px;
     }
-    .controls__button.pause:after {
+    .VJS_controls__button--pause:after {
         left: 42px;
     }
-    .controls__bar {
+    .VJS_controls__bar {
         display: flex;
         flex-grow: 1;
         align-items: center;
@@ -325,22 +406,22 @@
         border-radius: 8px;
         height: 34px;
     }
-    .controls__progress {
+    .VJS_controls__progress {
        flex: 1;
-       margin: 0 12px;
+       margin: 0 20px;
        width: 100%;
        height: 6px;
        border-radius: 3px;
        background-color: black;
        position: relative;
     }
-    .controls__progress:hover {
+    .VJS_controls__progress:hover {
         cursor: pointer;
     }
-    .controls__progress:hover .controls__progress-time {
+    .VJS_controls__progress:hover .VJS_controls__progress-time {
         display: block;
     }
-    .controls__progress-time {
+    .VJS_controls__progress-time {
         display: none;
         position: absolute;
         top: -40px;
@@ -351,7 +432,7 @@
         border-top-left-radius: 5px;
         border-top-right-radius: 5px;
     }
-    .controls__progress-back {
+    .VJS_controls__progress-back {
         position: absolute;
         height: 6px;
         top: 0;
@@ -359,87 +440,95 @@
         width: 0;
         background-color: #33ccff;
         border-radius: 3px;
+        z-index: 2;
     }
-    .controls__progress-back.started:before {
-        content: '';
+    .VJS_controls__progress-ranges {
         position: absolute;
-        top: -5px;
-        right: -5px;
-        width: 12px;
-        height: 12px;
-        border-radius: 100%;
-        background-color: #33ccff;
-        border: 2px solid #25bbed;
+        height: 6px;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 0;
+        overflow: hidden;
     }
-    .controls__time {
+    .VJS_controls__progress-range {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 0;
+        border-radius: 3px;
+        background-color: grey;
+    }
+    .VJS_controls__time {
         color: white;
         font-size: 14px;
         margin-right: 12px;
     }
-    .controls__volume {
+    .VJS_controls__volume {
         width: 32px;
         height: 14px;
         position: relative;
     }
-    .controls__volume-bar {
+    .VJS_controls__volume-bar {
         width: 3px;
         position: absolute;
         bottom: 0;
         background-color: white;
         transition: height .25s ease;
     }
-    .controls__volume-bar.active {
+    .VJS_controls__volume-bar--active {
         background-color: #33ccff;
     }
-    .controls__volume-bar:hover {
+    .VJS_controls__volume-bar:hover {
         cursor: pointer;
     }
-    .controls__volume-bar:first-child  { left:0; height:5px; }
-    .controls__volume-bar:nth-child(2) { left:5px; height:8px; }
-    .controls__volume-bar:nth-child(3) { left:10px; height:12px; }
-    .controls__volume-bar:nth-child(4) { left:15px; height:15px; }
-    .controls__volume-bar:last-child   { left:20px; height:18px; }
-    .controls__volume-bar:first-child:hover  { height:8px; }
-    .controls__volume-bar:nth-child(2):hover { height:11px; }
-    .controls__volume-bar:nth-child(3):hover { height:15px; }
-    .controls__volume-bar:nth-child(4):hover { height:18px; }
-    .controls__volume-bar:last-child:hover   { height:21px; }
-    .controls__full-screen {
+    .VJS_controls__volume-bar:first-child  { left:0; height:5px; }
+    .VJS_controls__volume-bar:nth-child(2) { left:5px; height:8px; }
+    .VJS_controls__volume-bar:nth-child(3) { left:10px; height:12px; }
+    .VJS_controls__volume-bar:nth-child(4) { left:15px; height:15px; }
+    .VJS_controls__volume-bar:last-child   { left:20px; height:18px; }
+    .VJS_controls__volume-bar:first-child:hover  { height:8px; }
+    .VJS_controls__volume-bar:nth-child(2):hover { height:11px; }
+    .VJS_controls__volume-bar:nth-child(3):hover { height:15px; }
+    .VJS_controls__volume-bar:nth-child(4):hover { height:18px; }
+    .VJS_controls__volume-bar:last-child:hover   { height:21px; }
+    .VJS_controls__full-screen {
         width: 26px;
         height: 16px;
         position: relative;
         transition: transform .2s ease;
         margin-right: 12px;
     }
-    .controls__full-screen:hover {
+    .VJS_controls__full-screen:hover {
         transform: scale(1.05);
         cursor: pointer;
     }
-    .controls__full-screen span {
+    .VJS_controls__full-screen span {
         position: absolute;
         width: 10px;
         height: 5px;
         display: block;
     }
-    .controls__full-screen span:first-child {
+    .VJS_controls__full-screen span:first-child {
         top: 0;
         left: 0;
         border-left: 2px solid white;
         border-top: 2px solid white;
     }
-    .controls__full-screen span:nth-child(2) {
+    .VJS_controls__full-screen span:nth-child(2) {
         top: 0;
         right: 0;
         border-top: 2px solid white;
         border-right: 2px solid white;
     }
-    .controls__full-screen span:nth-child(3) {
+    .VJS_controls__full-screen span:nth-child(3) {
         bottom: 0;
         left: 0;
         border-left: 2px solid white;
         border-bottom: 2px solid white;
     }
-    .controls__full-screen span:last-child {
+    .VJS_controls__full-screen span:last-child {
         bottom: 0;
         right: 0;
         border-bottom: 2px solid white;
