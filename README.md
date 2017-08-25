@@ -6,7 +6,9 @@ Single page component HTML5 video player component for Vue.js
 
 Clone this repository and run ` yarn ` or ` npm install ` to install all the dependencies.
 
-You can then run ` npm run build ` and this project will be running on ` localhost:8080 `
+You can then run ` npm run build ` and this project will be running on ` localhost:8080 `.
+
+You might need to install some dependencies globally if you haven't done so already previously.
 
 ## Using the component in your project
 
@@ -55,6 +57,6 @@ const videoWrapper = new Vue({
 ## Options
 
 In your data object, you can define the following:
-- allowFullScreen | {Boolean} | if you want the full screen button to appear
-- preload         | {String}  | if you want the video to preload on page load. possible values are: ` none `, ` auto ` & ` metadata `
-- sources         | {Array}   | Array of objects containing ` url ` and ` type ` values
+- `allowFullScreen` | {Boolean} | if you want the full screen button to appear
+- `preload`         | {String}  | if you want the video to preload on page load. possible values are: ` none `, ` auto ` & ` metadata `
+- `sources`         | {Array}   | Array of objects containing ` url ` and ` type ` values
