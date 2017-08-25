@@ -15,7 +15,7 @@ const videoWrapper = new Vue({
         return {
             viewJs: {
                 allowFullScreen: true,
-                preload: 'none',
+                preload: 'auto',
                 sources: [
                     {
                         url: 'http://nettuts.s3.amazonaws.com/763_sammyJSIntro/trailer_test.mp4',

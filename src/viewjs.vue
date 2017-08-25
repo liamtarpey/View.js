@@ -1,6 +1,8 @@
 <template>
     <div class="VJS_video-player-wrapper" v-on:keydown.space="clickVideoButton" tabindex="0">
-        <div class="VJS_video-loader" v-if="showSpinner"></div>
+        <div class="VJS_video-spinner" v-if="showSpinner">
+            <div class="VJS_video-spinner__inner"></div>
+        </div>
         <video class="VJS_video-player" ref="videoPlayer" v-on:click="clickVideoButton" :preload="props.preload">
             <source v-for="source in props.sources" :src="source.url" :type="source.type" />
             Your browser does not support HTML5 video.
@@ -23,11 +25,11 @@
                 </div>
                 <div class="VJS_controls__time">{{ timeRemaining }}</div>
                 <div class="VJS_controls__volume">
-                    <div class="VJS_controls__volume-bar" v-bind:class="{ 'VJS_active': volume >= 0.2 }" v-on:click="clickAdjustVolume(1)"></div>
-                    <div class="VJS_controls__volume-bar" v-bind:class="{ 'VJS_active': volume >= 0.4 }" v-on:click="clickAdjustVolume(2)"></div>
-                    <div class="VJS_controls__volume-bar" v-bind:class="{ 'VJS_active': volume >= 0.6 }" v-on:click="clickAdjustVolume(3)"></div>
-                    <div class="VJS_controls__volume-bar" v-bind:class="{ 'VJS_active': volume >= 0.8 }" v-on:click="clickAdjustVolume(4)"></div>
-                    <div class="VJS_controls__volume-bar" v-bind:class="{ 'VJS_active': volume === 1 }" v-on:click="clickAdjustVolume(5)"></div>
+                    <div class="VJS_controls__volume-bar" v-bind:class="{ 'VJS_controls__volume-bar--active': volume >= 0.2 }" v-on:click="clickAdjustVolume(0.2)"></div>
+                    <div class="VJS_controls__volume-bar" v-bind:class="{ 'VJS_controls__volume-bar--active': volume >= 0.4 }" v-on:click="clickAdjustVolume(0.4)"></div>
+                    <div class="VJS_controls__volume-bar" v-bind:class="{ 'VJS_controls__volume-bar--active': volume >= 0.6 }" v-on:click="clickAdjustVolume(0.6)"></div>
+                    <div class="VJS_controls__volume-bar" v-bind:class="{ 'VJS_controls__volume-bar--active': volume >= 0.8 }" v-on:click="clickAdjustVolume(0.8)"></div>
+                    <div class="VJS_controls__volume-bar" v-bind:class="{ 'VJS_controls__volume-bar--active': volume === 1 }" v-on:click="clickAdjustVolume(1)"></div>
                 </div>
                 <div class="VJS_controls__full-screen" v-on:click="clickEnterFullScreen" v-if="props.allowFullScreen">
                     <span></span>
@@ -128,6 +130,11 @@
 
     // Click event handler for play/pause button
     const clickVideoButton = () => {
+
+        if(vm.$data.showSpinner) {
+            return false;
+        }
+
         (vm.$data.videoBeingPlayed) ? pauseVideo() : playVideo();
     };
 
@@ -163,10 +170,9 @@
     /**
      * Click event handler for volume control
      * @param {String} vol
-     * NB: 5:1, 4:0.8, 3:0.6 , 2:0.4 , 1:0.2
      */
     const clickAdjustVolume = (vol) => {
-        vm.$data.volume = vol / 5;
+        vm.$data.volume = vol;
         videoPlayer.volume = vm.$data.volume;
     };
 
@@ -212,6 +218,9 @@
                 type: Object,
                 validator: function(prop) {
 
+                    const sourceValues = ['url', 'type'];
+                    const preloadValues = ['none', 'auto', 'metadata'];
+
                     if(!prop.hasOwnProperty('allowFullScreen')) {
                         logError('Missing `allowFullScreen` value in prop.');
                         return false;
@@ -220,11 +229,23 @@
                     if(!prop.hasOwnProperty('preload')) {
                         logError('Missing `preload` value in prop.');
                         return false;
+                    } else if(preloadValues.indexOf(prop.preload) === -1) {
+                        logError('`preload` value does not exist - Accepted values are: `none`, `auto` or `metadata`.');
+                        return false;
                     }
 
                     if(!prop.hasOwnProperty('sources') || !prop.sources.length || !Array.isArray(prop.sources)) {
                         logError('`sources` value missing or badly constructed.');
                         return false;
+                    }
+
+                    for(let i=0, l=prop.sources.length; i<l; i++) {
+                        for(let j=0, k=sourceValues.length; j<k; j++) {
+                            if(!prop.sources[i].hasOwnProperty(sourceValues[j])) {
+                                logError('source index[' + i + '] is missing property `' + sourceValues[j] + '`');
+                                return false;
+                            }
+                        }
                     }
 
                     return true;
@@ -243,8 +264,7 @@
         bufferRanges: [],
         videoBeingPlayed: false,
         percentagePlayed: 0,
-        //volume: 0.6,
-        volume: 0,
+        volume: 0.6,
         timeRemaining: '00:00',
         timeElapsed: null
     };
@@ -302,20 +322,25 @@
         width: 100%;
         font-family: arial, sans-serif;
     }
-    .VJS_video-loader,
-    .VJS_video-loader:after {
+    .VJS_video-spinner {
         position: absolute;
         top: 50%;
         left: 50%;
-        margin: -10px 0 0 -10px;
+        margin: -30px 0 0 -30px;
+        border-radius: 5px;
+        background: rgba(0,0,0,0.6);
+        padding: 14px;
         z-index: 99;
+    }
+    .VJS_video-spinner__inner,
+    .VJS_video-spinner__inner:after {
         width: 20px;
         height: 20px;
         border-radius: 50%;
     }
-    .VJS_video-loader {
-        border: 8px solid rgba(187, 255, 153,.4);
-        border-left: 8px solid #bbff99;
+    .VJS_video-spinner__inner {
+        border: 16px solid rgba(255, 255, 255,.4);
+        border-left: 16px solid #ffffff;
         animation: viewJsSpinner 1.1s infinite linear;
     }
     .VJS_controls {
@@ -417,17 +442,6 @@
         border-radius: 3px;
         z-index: 2;
     }
-    .VJS_controls__progress-back.started:before {
-        content: '';
-        position: absolute;
-        top: -5px;
-        right: -5px;
-        width: 12px;
-        height: 12px;
-        border-radius: 100%;
-        background-color: #33ccff;
-        border: 2px solid #25bbed;
-    }
     .VJS_controls__progress-ranges {
         position: absolute;
         height: 6px;
@@ -435,7 +449,6 @@
         left: 0;
         right: 0;
         z-index: 0;
-        border-radius: 3px;
         overflow: hidden;
     }
     .VJS_controls__progress-range {
@@ -444,6 +457,7 @@
         left: 0;
         bottom: 0;
         width: 0;
+        border-radius: 3px;
         background-color: grey;
     }
     .VJS_controls__time {
@@ -463,7 +477,7 @@
         background-color: white;
         transition: height .25s ease;
     }
-    .VJS_controls__volume-bar.active {
+    .VJS_controls__volume-bar--active {
         background-color: #33ccff;
     }
     .VJS_controls__volume-bar:hover {
