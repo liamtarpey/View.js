@@ -95,7 +95,7 @@
         };
     };
 
-    // Toggles fixed class on the entire controls area
+    // Toggles VJS_controls--fixed class on the entire controls area
     const toggleFixedControls = () => {
         videoControls.classList.toggle('VJS_controls--fixed');
     };
