@@ -467,7 +467,7 @@
     }
     .VJS_controls__volume {
         width: 32px;
-        height: 14px;
+        height: 18px;
         position: relative;
     }
     .VJS_controls__volume-bar {
