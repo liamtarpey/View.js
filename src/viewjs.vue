@@ -259,14 +259,16 @@
      * We expose this whole object publicly
      * All values are defaults
      */
-    const publicData = {
-        showSpinner: false,
-        bufferRanges: [],
-        videoBeingPlayed: false,
-        percentagePlayed: 0,
-        volume: 0.6,
-        timeRemaining: '00:00',
-        timeElapsed: null
+    const getPublicData = () => {
+        return {
+            showSpinner: false,
+            bufferRanges: [],
+            videoBeingPlayed: false,
+            percentagePlayed: 0,
+            volume: 0.6,
+            timeRemaining: '00:00',
+            timeElapsed: null
+        }
     };
 
     /**
@@ -287,9 +289,7 @@
         name: 'ViewJs',
         props: getPropsValidation(),
         methods: getPublicMethods(),
-        data: function() {
-            return publicData
-        },
+        data: getPublicData,
         mounted: function() {
 
             // Vars
