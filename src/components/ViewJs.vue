@@ -7,7 +7,7 @@
             <source v-for="source in props.sources" :src="source.url" :type="source.type" />
             Your browser does not support HTML5 video.
         </video>
-        <div class="VJS_controls VJS_controls--fixed" ref="videoControls">
+        <div class="VJS_controls" ref="videoControls" v-bind:class="{ 'VJS_controls--fixed': !videoBeingPlayed }">
             <button class="VJS_controls__button"
                     v-on:click="clickVideoButton"
                     v-bind:class="{
@@ -95,11 +95,6 @@
         };
     };
 
-    // Toggles VJS_controls--fixed class on the entire controls area
-    const toggleFixedControls = () => {
-        videoControls.classList.toggle('VJS_controls--fixed');
-    };
-
     /**
      * On progress event we get the player's buffered attribute.
      * From here we can calculate an array of ranges to show
@@ -125,7 +120,6 @@
     // Event listener for ended video
     const onVideoEnded = () => {
         vm.videoBeingPlayed = false;
-        toggleFixedControls();
     };
 
     // Click event handler for play/pause button
@@ -142,7 +136,6 @@
     const playVideo = () => {
         videoPlayer.play();
         vm.videoBeingPlayed = true;
-        toggleFixedControls();
     };
 
     // Handles video pause event
@@ -313,6 +306,10 @@
         position: relative;
         display: block;
     }
+    .VJS_video-player-wrapper:hover .VJS_controls {
+        opacity: 1;
+        visibility: visible;
+    }
     .VJS_video-player-wrapper:focus {
         outline: none;
     }
@@ -351,6 +348,13 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+    .VJS_controls--fixed {
+        opacity: 1;
+        visibility: visible;
     }
     .VJS_controls__button {
         flex: 0 0 80px;
