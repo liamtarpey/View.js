@@ -90,7 +90,7 @@
             const percentage = e.offsetX / progressBar.offsetWidth;
             const num = Math.floor(percentage * videoPlayer.duration);
             if(!isNaN(num)) {
-                vm.$data.timeElapsed = secondsToHumanReadable(num);
+                vm.timeElapsed = secondsToHumanReadable(num);
             }
         };
     };
@@ -108,14 +108,14 @@
     const calculateBufferRanges = () => {
 
         // Reset ranges every time
-        vm.$data.bufferRanges = [];
+        vm.bufferRanges = [];
 
         // Loop through all ranges to calculate start and end times
         for(let i=0, l=videoPlayer.buffered.length; i<l; i++) {
             const totalDuration = videoPlayer.duration;
             const startTime = Math.floor((100 / totalDuration) * videoPlayer.buffered.start(i));
             const endTime = Math.floor((100 / totalDuration) * videoPlayer.buffered.end(i));
-            vm.$data.bufferRanges.push({
+            vm.bufferRanges.push({
                 start: startTime + '%',
                 end: endTime + '%'
             });
@@ -124,31 +124,31 @@
 
     // Event listener for ended video
     const onVideoEnded = () => {
-        vm.$data.videoBeingPlayed = false;
+        vm.videoBeingPlayed = false;
         toggleFixedControls();
     };
 
     // Click event handler for play/pause button
     const clickVideoButton = () => {
 
-        if(vm.$data.showSpinner) {
+        if(vm.showSpinner) {
             return false;
         }
 
-        (vm.$data.videoBeingPlayed) ? pauseVideo() : playVideo();
+        (vm.videoBeingPlayed) ? pauseVideo() : playVideo();
     };
 
     // Handles video play event
     const playVideo = () => {
         videoPlayer.play();
-        vm.$data.videoBeingPlayed = true;
+        vm.videoBeingPlayed = true;
         toggleFixedControls();
     };
 
     // Handles video pause event
     const pauseVideo = () => {
         videoPlayer.pause();
-        vm.$data.videoBeingPlayed = false;
+        vm.videoBeingPlayed = false;
     };
 
     // On timeupdate event, calculate remaining time of video
@@ -157,8 +157,8 @@
         const currentTime = videoPlayer.currentTime;
         const percentage = Math.floor((100 / duration) * currentTime);
         const num = Math.round(duration - currentTime);
-        vm.$data.percentagePlayed = percentage + '%';
-        vm.$data.timeRemaining = secondsToHumanReadable(num);
+        vm.percentagePlayed = percentage + '%';
+        vm.timeRemaining = secondsToHumanReadable(num);
     };
 
     // Click event handler for skipping to a certain position in the video
@@ -172,8 +172,8 @@
      * @param {String} vol
      */
     const clickAdjustVolume = (vol) => {
-        vm.$data.volume = vol;
-        videoPlayer.volume = vm.$data.volume;
+        vm.volume = vol;
+        videoPlayer.volume = vm.volume;
     };
 
     // Make the player full screen
@@ -183,12 +183,12 @@
 
     // Shows buffering spinner
     const showSpinner = () => {
-        vm.$data.showSpinner = true;
+        vm.showSpinner = true;
     };
 
     // Hides buffering spinner
     const hideSpinner = () => {
-        vm.$data.showSpinner = false;
+        vm.showSpinner = false;
     };
 
     /**
@@ -277,10 +277,10 @@
      */
     const getPublicMethods = () => {
         return {
-            clickVideoButton: clickVideoButton,
-            clickSkipToPosition: clickSkipToPosition,
-            clickAdjustVolume: clickAdjustVolume,
-            clickEnterFullScreen: clickEnterFullScreen
+            clickVideoButton,
+            clickSkipToPosition,
+            clickAdjustVolume,
+            clickEnterFullScreen
         }
     };
 
@@ -302,6 +302,11 @@
 
             // Add hover event for progress bar
             showHoverTime();
+        },
+        computed: {
+            timeRemaining() {
+
+            }
         }
     };
 
