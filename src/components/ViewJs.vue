@@ -353,15 +353,15 @@
         align-items: center;
     }
     .VJS_controls__button {
-        background-color: rgba(0,0,0,.7);
-        border-radius: 8px;
-        width: 80px;
-        height: 40px;
+        flex: 0 0 80px;
         display: block;
-        border: none;
+        position: relative;
+        height: 40px;
         margin-right: 24px;
         text-align: center;
-        position: relative;
+        background-color: rgba(0,0,0,.7);
+        border-radius: 8px;
+        border: none;
     }
     .VJS_controls__button:hover {
         cursor: pointer;
