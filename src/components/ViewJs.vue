@@ -285,7 +285,7 @@
     };
 
     // Our default component setup
-    const ViewJsComponent = {
+    const ViewJs = {
         props: getPropsValidation(),
         methods: getPublicMethods(),
         data: getPublicData,
@@ -302,15 +302,10 @@
 
             // Add hover event for progress bar
             showHoverTime();
-        },
-        computed: {
-            timeRemaining() {
-
-            }
         }
     };
 
-    export default ViewJsComponent;
+    export default ViewJs;
 </script>
 
 <style scoped>
