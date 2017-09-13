@@ -50,7 +50,7 @@
     let videoControls = null;
     let progressBar = null;
     let progressLoop = null;
-    const fileName = 'viewjs.vue';
+    const fileName = 'ViewJs.vue';
 
     /**
      * Logs an error with the filename
@@ -286,7 +286,6 @@
 
     // Our default component setup
     const ViewJsComponent = {
-        name: 'ViewJs',
         props: getPropsValidation(),
         methods: getPublicMethods(),
         data: getPublicData,

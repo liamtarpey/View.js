@@ -8,14 +8,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
     <body>
-
-        <!--
-            Basic usage example
-            Inline styles for demo purposes, you'll want to style your container
-            in a different way as part of your build process
-        -->
         <style>
-
             /* Paul Irish box sizing: https://www.paulirish.com/2012/box-sizing-border-box-ftw/ */
             html {
                 box-sizing: border-box;
@@ -23,23 +16,9 @@
             *, *:before, *:after {
                 box-sizing: inherit;
             }
-
-            /* Default wrapper style */
-            .video-wrapper {
-                width: 100%;
-                margin: auto;
-                max-width: 700px;
-            }
         </style>
 
-        <div id="video-wrapper" class="video-wrapper">
-
-            <!--
-                To include the player you'll need to create a <view-js> element like the example below
-                Props: is an object that you define in your exposed parent data
-            -->
-            <view-js :props="viewJs"></view-js>
-        </div>
+        <div id="app"></div>
 
         <script src="./dist/bundle.js"></script>
     </body>
