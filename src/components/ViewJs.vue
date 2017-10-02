@@ -61,6 +61,41 @@
     };
 
     /**
+     * Returns an integer percentage based on a mouse position click or hover
+     * @param {Event}
+     * @return {Number}
+     */
+    const getPercentageOffset = (e) => {
+        return e.offsetX / progressBar.offsetWidth;
+    };
+
+    /**
+     * Returns a string percentage based on player duration and current time
+     * @return {String} percentage played
+     */
+    const getPercentagePlayed = () => {
+        const percentagePlayed = Math.floor((100 / videoPlayer.duration) * videoPlayer.currentTime);
+        return percentagePlayed + '%';
+    };
+
+    /**
+     * Gets current time of video based on a percentage value
+     * @param {Number} percentage
+     * @return {Number} time
+     */
+    const getCurrentTime = (percentage) => {
+        return Math.floor(percentage * videoPlayer.duration);
+    };
+
+    /**
+     * Gets remaining time in seconds based on player duration and current time
+     * @return {Number} seconds
+     */
+    const getRemainingTime = () => {
+        return Math.round(videoPlayer.duration - videoPlayer.currentTime);
+    };
+
+    /**
      * Converts seconds to a human readable format
      * Checks if hours exists and prepends if needed
      * @param {Number} num | seconds to convert
@@ -85,14 +120,13 @@
     };
 
     // Shows the time when hovering over the progress bar
-    const showHoverTime = () => {
-        progressBar.onmousemove = function(e) {
-            const percentage = e.offsetX / progressBar.offsetWidth;
-            const num = Math.floor(percentage * videoPlayer.duration);
-            if(!isNaN(num)) {
-                vm.timeElapsed = secondsToHumanReadable(num);
-            }
-        };
+    const showHoverTime = (e) => {
+        const percentageOffset = getPercentageOffset(e);
+        const timeInSeconds = getCurrentTime(percentageOffset);
+
+        if(!isNaN(timeInSeconds)) {
+            vm.timeElapsed = secondsToHumanReadable(timeInSeconds);
+        }
     };
 
     /**
@@ -146,18 +180,15 @@
 
     // On timeupdate event, calculate remaining time of video
     const timeUpdate = () => {
-        const duration = videoPlayer.duration;
-        const currentTime = videoPlayer.currentTime;
-        const percentage = Math.floor((100 / duration) * currentTime);
-        const num = Math.round(duration - currentTime);
-        vm.percentagePlayed = percentage + '%';
-        vm.timeRemaining = secondsToHumanReadable(num);
+        const timeRemainingInSeconds = getRemainingTime();
+        vm.timeRemaining = secondsToHumanReadable(timeRemainingInSeconds);
+        vm.percentagePlayed = getPercentagePlayed();
     };
 
     // Click event handler for skipping to a certain position in the video
     const clickSkipToPosition = (e) => {
-        const percentage = e.offsetX / progressBar.offsetWidth;
-        videoPlayer.currentTime = percentage * videoPlayer.duration;
+        const percentageOffset = getPercentageOffset(e);
+        videoPlayer.currentTime = getCurrentTime(percentageOffset);
     };
 
     /**
@@ -200,6 +231,7 @@
      * - canplay    | hideSpinner()           | hides the spinner when video stops buffering
      * - ended      | onVideoEnded()          | fires pause event on video to toggle button
      * - progress   | calculateBufferRanges() | loops through buffer ranges to show loaded chunks on progress bar
+     * - mousemove  | showHoverTime()         | listens for mouse move to show a hover element with remaining time
      */
     const attachEventListeners = () => {
         videoPlayer.addEventListener('timeupdate', timeUpdate);
@@ -207,6 +239,7 @@
         videoPlayer.addEventListener('canplay', hideSpinner);
         videoPlayer.addEventListener('ended', onVideoEnded);
         videoPlayer.addEventListener('progress', calculateBufferRanges);
+        progressBar.addEventListener('mousemove', showHoverTime);
     };
 
     /**
@@ -300,9 +333,6 @@
 
             // Attach all event listeners on load
             attachEventListeners();
-
-            // Add hover event for progress bar
-            showHoverTime();
         }
     };
 
