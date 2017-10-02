@@ -169,9 +169,17 @@
         videoPlayer.volume = vm.volume;
     };
 
-    // Make the player full screen
+    // Make the player full screen (fallbacks for all modern browsers)
     const clickEnterFullScreen = () => {
-        videoPlayer.webkitRequestFullScreen();
+        if(videoPlayer.requestFullscreen) {
+            videoPlayer.requestFullscreen();
+        } else if(videoPlayer.webkitRequestFullScreen) {
+            videoPlayer.webkitRequestFullScreen();
+        } else if(videoPlayer.mozRequestFullScreen) {
+            videoPlayer.mozRequestFullScreen();
+        } else if (videoPlayer.msRequestFullscreen) {
+            videoPlayer.msRequestFullscreen();
+        }
     };
 
     // Shows buffering spinner
