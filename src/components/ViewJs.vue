@@ -119,7 +119,11 @@
         return minutes + ':' + seconds;
     };
 
-    // Shows the time when hovering over the progress bar
+    /**
+     * Shows time when hovering over the progress bar
+     * If timeInSeconds is a number, we can update our exposed variable
+     * @param {Event} mouse event
+     */
     const showHoverTime = (e) => {
         const percentageOffset = getPercentageOffset(e);
         const timeInSeconds = getCurrentTime(percentageOffset);
@@ -136,7 +140,7 @@
      */
     const calculateBufferRanges = () => {
 
-        // Reset ranges every time
+        // Reset ranges every time this is called
         vm.bufferRanges = [];
 
         // Loop through all ranges to calculate start and end times
