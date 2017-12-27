@@ -2,6 +2,8 @@
 
 Single page component HTML5 video player component for Vue.js
 
+DEMO: https://liamtarpey.github.io/View.js/
+
 ## Running this repository
 
 Clone this repository and run ` yarn ` or ` npm install ` to install all the dependencies.
