@@ -323,7 +323,7 @@
     };
 
     // Our default component setup
-    const ViewJs = {
+    export default {
         props: getPropsValidation(),
         methods: getPublicMethods(),
         data: getPublicData,
@@ -339,8 +339,6 @@
             attachEventListeners();
         }
     };
-
-    export default ViewJs;
 </script>
 
 <style scoped>

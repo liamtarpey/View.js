@@ -1,17 +1,20 @@
-var path = require('path');
+var Path = require('path');
 var ExtractTextPlugin = require("extract-text-webpack-plugin")
 
 module.exports = {
     entry: './src/index.js',
     output: {
-        path: path.resolve(__dirname, 'dist'),
+        path: Path.resolve(__dirname, 'dist'),
         filename: 'bundle.js',
         publicPath: '/dist'
     },
     module: {
         loaders: [
             {
-                exclude: [/(node_modules)/],
+                test: /\.js$/,
+                loaders: ['babel-loader']
+            },
+            {
                 test: /\.vue$/,
                 loader: 'vue-loader',
                 options: {
