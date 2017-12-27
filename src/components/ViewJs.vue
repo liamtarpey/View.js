@@ -1,22 +1,22 @@
 <template>
-    <div class="VJS_video-player-wrapper" v-on:keydown.space="clickVideoButton" tabindex="0">
+    <div class="VJS_video-player-wrapper" v-on:keydown.space="togglePlayPause" tabindex="0">
         <div class="VJS_video-spinner" v-if="showSpinner">
             <div class="VJS_video-spinner__inner"></div>
         </div>
-        <video class="VJS_video-player" ref="videoPlayer" v-on:click="clickVideoButton" :preload="props.preload">
+        <video class="VJS_video-player" ref="videoPlayer" v-on:click="togglePlayPause" :preload="props.preload">
             <source v-for="source in props.sources" :src="source.url" :type="source.type" />
             Your browser does not support HTML5 video.
         </video>
         <div class="VJS_controls" ref="videoControls" v-bind:class="{ 'VJS_controls--fixed': !videoBeingPlayed }">
             <button class="VJS_controls__button"
-                    v-on:click="clickVideoButton"
+                    v-on:click="togglePlayPause"
                     v-bind:class="{
                         'VJS_controls__button--play': !videoBeingPlayed,
                         'VJS_controls__button--pause': videoBeingPlayed
                     }">
             </button>
             <div class="VJS_controls__bar">
-                <div ref="progressBar" class="VJS_controls__progress" v-on:click="clickSkipToPosition($event)">
+                <div ref="progressBar" class="VJS_controls__progress" v-on:click="skipToPosition($event)">
                     <div class="VJS_controls__progress-time" v-if="timeElapsed">{{ timeElapsed }}</div>
                     <span class="VJS_controls__progress-back" v-bind:class="{ 'VJS_started': percentagePlayed !== 0 }" v-bind:style="{ width: percentagePlayed }"></span>
                     <div class="VJS_controls__progress-ranges">
@@ -25,13 +25,13 @@
                 </div>
                 <div class="VJS_controls__time">{{ timeRemaining }}</div>
                 <div class="VJS_controls__volume">
-                    <div class="VJS_controls__volume-bar" v-bind:class="{ 'VJS_controls__volume-bar--active': volume >= 0.2 }" v-on:click="clickAdjustVolume(0.2)"></div>
-                    <div class="VJS_controls__volume-bar" v-bind:class="{ 'VJS_controls__volume-bar--active': volume >= 0.4 }" v-on:click="clickAdjustVolume(0.4)"></div>
-                    <div class="VJS_controls__volume-bar" v-bind:class="{ 'VJS_controls__volume-bar--active': volume >= 0.6 }" v-on:click="clickAdjustVolume(0.6)"></div>
-                    <div class="VJS_controls__volume-bar" v-bind:class="{ 'VJS_controls__volume-bar--active': volume >= 0.8 }" v-on:click="clickAdjustVolume(0.8)"></div>
-                    <div class="VJS_controls__volume-bar" v-bind:class="{ 'VJS_controls__volume-bar--active': volume === 1 }" v-on:click="clickAdjustVolume(1)"></div>
+                    <div class="VJS_controls__volume-bar" v-bind:class="{ 'VJS_controls__volume-bar--active': volume >= 0.2 }" v-on:click="adjustVolume(0.2)"></div>
+                    <div class="VJS_controls__volume-bar" v-bind:class="{ 'VJS_controls__volume-bar--active': volume >= 0.4 }" v-on:click="adjustVolume(0.4)"></div>
+                    <div class="VJS_controls__volume-bar" v-bind:class="{ 'VJS_controls__volume-bar--active': volume >= 0.6 }" v-on:click="adjustVolume(0.6)"></div>
+                    <div class="VJS_controls__volume-bar" v-bind:class="{ 'VJS_controls__volume-bar--active': volume >= 0.8 }" v-on:click="adjustVolume(0.8)"></div>
+                    <div class="VJS_controls__volume-bar" v-bind:class="{ 'VJS_controls__volume-bar--active': volume === 1 }" v-on:click="adjustVolume(1)"></div>
                 </div>
-                <div class="VJS_controls__full-screen" v-on:click="clickEnterFullScreen" v-if="props.allowFullScreen">
+                <div class="VJS_controls__full-screen" v-on:click="enterFullScreen" v-if="props.allowFullScreen">
                     <span></span>
                     <span></span>
                     <span></span>
@@ -161,7 +161,7 @@
     };
 
     // Click event handler for play/pause button
-    const clickVideoButton = () => {
+    const togglePlayPause = () => {
 
         if(vm.showSpinner) {
             return false;
@@ -190,7 +190,7 @@
     };
 
     // Click event handler for skipping to a certain position in the video
-    const clickSkipToPosition = (e) => {
+    const skipToPosition = (e) => {
         const percentageOffset = getPercentageOffset(e);
         videoPlayer.currentTime = getCurrentTime(percentageOffset);
     };
@@ -199,13 +199,13 @@
      * Click event handler for volume control
      * @param {String} vol
      */
-    const clickAdjustVolume = (vol) => {
+    const adjustVolume = (vol) => {
         vm.volume = vol;
         videoPlayer.volume = vm.volume;
     };
 
     // Make the player full screen (fallbacks for all modern browsers)
-    const clickEnterFullScreen = () => {
+    const enterFullScreen = () => {
         if(videoPlayer.requestFullscreen) {
             videoPlayer.requestFullscreen();
         } else if(videoPlayer.webkitRequestFullScreen) {
@@ -315,10 +315,10 @@
      */
     const getPublicMethods = () => {
         return {
-            clickVideoButton,
-            clickSkipToPosition,
-            clickAdjustVolume,
-            clickEnterFullScreen
+            togglePlayPause,
+            skipToPosition,
+            adjustVolume,
+            enterFullScreen
         }
     };
 

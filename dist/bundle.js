@@ -10143,7 +10143,7 @@ var onVideoEnded = function onVideoEnded() {
 };
 
 // Click event handler for play/pause button
-var clickVideoButton = function clickVideoButton() {
+var togglePlayPause = function togglePlayPause() {
 
     if (vm.showSpinner) {
         return false;
@@ -10172,7 +10172,7 @@ var timeUpdate = function timeUpdate() {
 };
 
 // Click event handler for skipping to a certain position in the video
-var clickSkipToPosition = function clickSkipToPosition(e) {
+var skipToPosition = function skipToPosition(e) {
     var percentageOffset = getPercentageOffset(e);
     videoPlayer.currentTime = getCurrentTime(percentageOffset);
 };
@@ -10181,13 +10181,13 @@ var clickSkipToPosition = function clickSkipToPosition(e) {
  * Click event handler for volume control
  * @param {String} vol
  */
-var clickAdjustVolume = function clickAdjustVolume(vol) {
+var adjustVolume = function adjustVolume(vol) {
     vm.volume = vol;
     videoPlayer.volume = vm.volume;
 };
 
 // Make the player full screen (fallbacks for all modern browsers)
-var clickEnterFullScreen = function clickEnterFullScreen() {
+var enterFullScreen = function enterFullScreen() {
     if (videoPlayer.requestFullscreen) {
         videoPlayer.requestFullscreen();
     } else if (videoPlayer.webkitRequestFullScreen) {
@@ -10297,10 +10297,10 @@ var getPublicData = function getPublicData() {
  */
 var getPublicMethods = function getPublicMethods() {
     return {
-        clickVideoButton: clickVideoButton,
-        clickSkipToPosition: clickSkipToPosition,
-        clickAdjustVolume: clickAdjustVolume,
-        clickEnterFullScreen: clickEnterFullScreen
+        togglePlayPause: togglePlayPause,
+        skipToPosition: skipToPosition,
+        adjustVolume: adjustVolume,
+        enterFullScreen: enterFullScreen
     };
 };
 
@@ -10336,7 +10336,7 @@ var render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._sel
     on: {
       "keydown": function($event) {
         if (!('button' in $event) && _vm._k($event.keyCode, "space", 32)) { return null; }
-        _vm.clickVideoButton($event)
+        _vm.togglePlayPause($event)
       }
     }
   }, [(_vm.showSpinner) ? _c('div', {
@@ -10350,7 +10350,7 @@ var render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._sel
       "preload": _vm.props.preload
     },
     on: {
-      "click": _vm.clickVideoButton
+      "click": _vm.togglePlayPause
     }
   }, [_vm._l((_vm.props.sources), function(source) {
     return _c('source', {
@@ -10372,7 +10372,7 @@ var render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._sel
       'VJS_controls__button--pause': _vm.videoBeingPlayed
     },
     on: {
-      "click": _vm.clickVideoButton
+      "click": _vm.togglePlayPause
     }
   }), _vm._v(" "), _c('div', {
     staticClass: "VJS_controls__bar"
@@ -10381,7 +10381,7 @@ var render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._sel
     staticClass: "VJS_controls__progress",
     on: {
       "click": function($event) {
-        _vm.clickSkipToPosition($event)
+        _vm.skipToPosition($event)
       }
     }
   }, [(_vm.timeElapsed) ? _c('div', {
@@ -10415,7 +10415,7 @@ var render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._sel
     },
     on: {
       "click": function($event) {
-        _vm.clickAdjustVolume(0.2)
+        _vm.adjustVolume(0.2)
       }
     }
   }), _vm._v(" "), _c('div', {
@@ -10425,7 +10425,7 @@ var render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._sel
     },
     on: {
       "click": function($event) {
-        _vm.clickAdjustVolume(0.4)
+        _vm.adjustVolume(0.4)
       }
     }
   }), _vm._v(" "), _c('div', {
@@ -10435,7 +10435,7 @@ var render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._sel
     },
     on: {
       "click": function($event) {
-        _vm.clickAdjustVolume(0.6)
+        _vm.adjustVolume(0.6)
       }
     }
   }), _vm._v(" "), _c('div', {
@@ -10445,7 +10445,7 @@ var render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._sel
     },
     on: {
       "click": function($event) {
-        _vm.clickAdjustVolume(0.8)
+        _vm.adjustVolume(0.8)
       }
     }
   }), _vm._v(" "), _c('div', {
@@ -10455,13 +10455,13 @@ var render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._sel
     },
     on: {
       "click": function($event) {
-        _vm.clickAdjustVolume(1)
+        _vm.adjustVolume(1)
       }
     }
   })]), _vm._v(" "), (_vm.props.allowFullScreen) ? _c('div', {
     staticClass: "VJS_controls__full-screen",
     on: {
-      "click": _vm.clickEnterFullScreen
+      "click": _vm.enterFullScreen
     }
   }, [_c('span'), _vm._v(" "), _c('span'), _vm._v(" "), _c('span'), _vm._v(" "), _c('span')]) : _vm._e()])])])
 }
